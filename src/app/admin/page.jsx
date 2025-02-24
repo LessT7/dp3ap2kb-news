@@ -7,6 +7,7 @@ import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "firebase
 import { db } from "../services/firebase";
 import jwt from "jsonwebtoken";
 import dp from "../../../public/images/dp.png";
+import Swal from "sweetalert2";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -53,7 +54,12 @@ export default function AdminPage() {
           description: data.description,
           ...(base64Image && { imageBase64: base64Image }),
         });
-        alert("Berita berhasil diperbarui!");
+        Swal.fire({
+          title: "Berita berhasil diubah!",
+          icon: "success",
+          showConfirmButton: false,
+          timer: 1500
+        })
         setEditId(null);
       } else {
         await addDoc(collection(db, "news"), {
@@ -62,7 +68,12 @@ export default function AdminPage() {
           imageBase64: base64Image,
           createdAt: new Date(),
         });
-        alert("Berita berhasil diunggah!");
+        Swal.fire({
+          title: "Berita berhasil ditambahkan!",
+          icon: "success",
+          showConfirmButton: false,
+          timer: 1500
+        })
       }
       reset();
       fetchNews();
@@ -87,11 +98,41 @@ export default function AdminPage() {
   };
 
   const handleDelete = async (id) => {
-    if (confirm("Apakah Anda yakin ingin menghapus berita ini?")) {
+
+    Swal.fire({
+      title: "Apakah Anda yakin ingin menghapus berita ini?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Ya, hapus!",
+      cancelButtonText: "Batal"
+    }).then(async (result) => {
+    if (result.isConfirmed) {
       await deleteDoc(doc(db, "news", id));
-      alert("Berita berhasil dihapus!");
-      fetchNews();
+      Swal.fire(
+        {
+          title: "Berita berhasil dihapus!",
+          icon: "success",
+          showConfirmButton: false,
+          timer: 1500
+        }
+      )
     }
+    }).catch((error) => {
+    console.error("Error deleting news:", error);
+   Swal.fire({
+      icon: "error",
+      title: "Oops...",
+      text: "Terjadi kesalahan saat menghapus berita!",
+   })
+    })
+    
+    // if (confirm("Apakah Anda yakin ingin menghapus berita ini?")) {
+    //   await deleteDoc(doc(db, "news", id));
+    //   alert("Berita berhasil dihapus!");
+    //   fetchNews();
+    // }
   };
 
   useEffect(() => {
